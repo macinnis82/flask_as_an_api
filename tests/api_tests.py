@@ -261,6 +261,39 @@ class TestAPI(unittest.TestCase):
 
     data = json.loads(response.data)
     self.assertEqual(data["message"], "'body' is a required property")
+    
+  def test_update_post(self):
+    """ Updating a post (PUT request) from a populated database """
+    postA = models.Post(title="Example Post A", body="Just a test")
+    # postB = models.Post(title="Example Post B", body="Still a test")
+
+    session.add(postA)
+    session.commit()
+    
+    # import pdb;
+    # pdb.set_trace()
+
+    data_payload = {
+      "title": "Example Post",
+      "body": "a new test"
+    }
+
+    response = self.client.put("/api/post/{}".format(postA.id),
+      data=json.dumps(data_payload),
+      content_type="application/json",
+      headers=[("Accept", "application/json")]
+    )
+
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.mimetype, "application/json")
+
+    data_response = json.loads(response.data)
+    # {u'body': u'Just a test', u'id': 1, u'title': u'Example Post'}
+    self.assertEqual(len(data_response), 3)
+
+    # postA = data[0]
+    self.assertEqual(data_response["title"], "Example Post")
+    self.assertEqual(data_response["body"], "a new test")
 
 if __name__ == "__main__":
   unittest.main()
